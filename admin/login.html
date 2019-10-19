@@ -60,12 +60,12 @@
             password: password
           },
         success: function (cc) {
-          console.log(cc);
-          
+          // console.log(cc);
           if (cc.code === 400) {
             alert(cc.msg)
           } else if (cc.code === 200) {
             alert(cc.msg);
+            window.localStorage.setItem('hh',cc.token);
             window.location.href = './index.html';
           }
         }
