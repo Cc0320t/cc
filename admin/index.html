@@ -27,7 +27,7 @@
         <div class="menu">
             <div class="level01 active"><a href="./main_count.html" target="main_frame"><i
                         class="iconfont icon-yidiandiantubiao04"></i><span>首页</span></a></div>
-            <div class="level01"><a href="./article_release.html.html"><i
+            <div class="level01"><a href="#"><i
                         class="iconfont icon-icon-article"></i><span>文章管理</span><b
                         class="iconfont icon-arrowdownl"></b></a></div>
             <ul class="level02">
@@ -59,6 +59,14 @@
         </div>
     </div>
 </body>
+<script>
+    $(function () {
+        $('.level01:eq(1)').click(function () {
+            $(this).next('.level02').slideToggle();
 
+        });
+    });
+    
+</script>
 
 </html>
