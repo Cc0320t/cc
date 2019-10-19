@@ -39,5 +39,39 @@
   </div>
 
 </body>
+<script>
+  $(function () {
+    $('.input_sub').click(function (e) {
+      e.preventDefault(); //阻止提交按钮的默认行为
+      // 用户名
+      var username = $('.input_txt').val().trim();
+      // 密码
+      var password = $('.input_pass').val().trim();
+      // 非空判断
+      if (username === '' || password === '') {
+        alert('打点字呗哥');
+        return;
+      }
+      $.ajax({
+        type: 'post',
+        url: 'http://localhost:8080/api/v1/admin/user/login',
+          data: {
+            username: username,
+            password: password
+          },
+        success: function (cc) {
+          console.log(cc);
+          
+          if (cc.code === 400) {
+            alert(cc.msg)
+          } else if (cc.code === 200) {
+            alert(cc.msg);
+            window.location.href = './index.html';
+          }
+        }
+      })
+    })
+  })
+</script>
 
 </html>
