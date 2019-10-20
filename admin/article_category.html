@@ -50,7 +50,38 @@
                 </tfoot>
             </table>
         </div>
+    </div> <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <!-- 标题 -->
+                    <h4 class="modal-title" id="myModalLabel">新增分类</h4>
+                </div>
+                <!-- 内容 -->
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">分类名称:</label>
+                            <input type="text" class="form-control cate-name">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">分类别名:</label>
+                            <input type="text" class="form-control cate-slug">
+                        </div>
+                    </form>
+                </div>
+                <!-- 底部 -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary">新增</button>
+                </div>
+            </div>
+        </div>
     </div>
+
 </body>
 <!-- 定义 模板 -->
 <script type="text/html" id="cateTem">
@@ -60,7 +91,7 @@
         <td>{{ $value.slug }}</td>
         <td class="text-center">
             <a href="javascript:void(0)" data-toggle="modal" class=" btn btn-info btn-xs">编辑</a>
-            <a href="javascript:void(0)" class="btn btn-danger btn-xs">删除</a>
+            <a href="javascript:void(0)" data-id="{{$value.id}}" class="btn btn-danger btn-xs btn-delete">删除</a>
         </td>
     </tr>
     {{/each}}
@@ -68,17 +99,66 @@
 <script>
     $(function () {
         // 获取文章类别数据
-        $.ajax({
-            url: BigNew.category_list,
-            success: function (backData) {
-                console.log(backData);
-                // 调用模板引擎的方法
-                // 传入数据 
-                var html = template("cateTem", backData);
-                console.log(html);
-                // 渲染页面 tr放在tbody中
-                $('tbody').html(html);
-            }
+        function getCategoryData() {
+
+
+            $.ajax({
+                url: BigNew.category_list,
+                success: function (backData) {
+                    console.log(backData);
+                    // 调用模板引擎的方法
+                    // 传入数据 
+                    var html = template("cateTem", backData);
+                    console.log(html);
+                    // 渲染页面 tr放在tbody中
+                    $('tbody').html(html);
+                }
+            })
+        }
+        // 获取文章类别数据
+        getCategoryData();
+        // 点击新增分类
+        $('.btn-primary').click(function () {
+            var name = $('.cate-name').val();
+            var slug = $('.cate-slug').val();
+            $.ajax({
+                url: BigNew.category_add,
+                type: 'post',
+                data: {
+                    name: name,
+                    slug: slug,
+                },
+                success: function (cc) {
+                    if (cc.code === 201) {
+                        $('#myModal').modal('hide');
+                        // 重新获取分类信息
+                        getCategoryData();
+                    }
+                }
+            })
+        })
+        // 点击删除
+        // tr是动态创建的 需要用到事件委托 只要是动态创建，肯定用事件委托
+        // 可以委托到他的上一级或者上一级没影响
+        $('tbody').on('click','.btn-delete',function(){
+            // alert(222);
+            // 获取id值
+            var id  = $(this).attr("data-id");
+            // 调用接口
+            $.ajax({
+                url:BigNew.category_delete,
+                type:'post',
+                data:{
+                    id:id,
+                },
+                success:function(hh){
+                    console.log(hh);      
+                    if (hh.code === 204) {
+                        alert('您确定要滚犊子了么，亲😂');
+                        getCategoryData();
+                    }
+                }
+            })
         })
     })
 </script>

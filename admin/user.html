@@ -96,6 +96,8 @@
             // $('form')[0]获取dom元素
             // var data = new FormData($('form')[0]);
             var data = new FormData(document.querySelector('form'));
+            // console.log(data);
+            
             $.ajax({
                 url:BigNew.user_edit,
                 type:'post',
@@ -105,7 +107,7 @@
                 // 不处理数据
                 processData:false,
                 success:function(ss){
-                    console.log(ss);
+                    // console.log(ss);
                     alert(ss.msg);
                     if(ss.code === 200) {
                         window.parent.location.reload();
