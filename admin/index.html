@@ -88,8 +88,14 @@
             // }
         })
         $('.logout').click(function () {
-            alert('你滚犊子把啊，小傻逼🤣');
-            window.location.href = './login.html'
+            if ( window.confirm("你真的要离开我了吗,哭唧唧!o(╥﹏╥)o")) {
+            //    清除缓存
+                window.localStorage.removeItem('hh');
+                // 去登录页
+                window.location.href = './login.html'
+            }
+           
+            // alert('dsad');
 
         })
     });
