@@ -43,7 +43,7 @@
                 <tfoot>
                     <tr>
                         <td colspan="3" class="text-center">
-                            <a href="javascript:void(0)" class="btn btn-success" id="xinzengfenlei" data-toggle="modal"
+                            <a href="#" class="btn btn-success" id="xinzengfenlei" data-toggle="modal"
                                 data-target="#myModal">新增分类</a>
                         </td>
                     </tr>
@@ -95,7 +95,7 @@
         </td>
     </tr>
     {{/each}}
-</script>
+</script> 
 <script>
     $(function () {
         // 获取文章类别数据
@@ -105,11 +105,11 @@
             $.ajax({
                 url: BigNew.category_list,
                 success: function (backData) {
-                    console.log(backData);
+                    // console.log(backData);
                     // 调用模板引擎的方法
                     // 传入数据 
                     var html = template("cateTem", backData);
-                    console.log(html);
+                    // console.log(html);
                     // 渲染页面 tr放在tbody中
                     $('tbody').html(html);
                 }
