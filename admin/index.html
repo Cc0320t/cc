@@ -70,22 +70,22 @@
         });
         $.ajax({
             url:'http://localhost:8080/api/v1/admin/user/info',
-            headers:{
-                Authorization:window.localStorage.getItem('hh')
-            },
+            // headers:{
+            //     Authorization:window.localStorage.getItem('hh')
+            // },
             success:function (ss) {
                 // console.log(ss);
                 $('.user_info>img').attr('src',ss.data.userPic);
                 $('.user_info>span').text('欢迎',ss.data.nickname);
                 $('.user_info>img').attr('src',ss.data.userPic);
             },
-            error:function(tt){
-                console.log(tt);
-                if (tt.statusText === 'Forbidden') {
-                    alert('滚犊子');
-                    window.location = './login.html'
-                }
-            }
+            // error:function(tt){
+            //     console.log(tt);
+            //     if (tt.statusText === 'Forbidden') {
+            //         alert('滚犊子');
+            //         window.location = './login.html'
+            //     }
+            // }
         })
     });
 </script>
