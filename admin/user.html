@@ -69,5 +69,59 @@
         </div>
     </div>
 </body>
-
+<script>
+    $(function(){
+        // 用户详情获取
+        $.ajax({
+            url:BigNew.user_detail,
+            success:function(cc){
+                // $('.username').val(cc.data.username);
+                // $('.nickname').val(cc.data.nickname);
+                // $('.email').val(cc.data.email);
+                // $('.password').val(cc.data.password);
+                // 标签元素的标记和数据有相同部分
+                // key  对象的键
+                for (const key in cc.data) {
+                    $('.'+key).val(cc.data[key]);     
+                    }
+                $('user_pic').attr('src',cc.data.userPic)
+            }
+        })
+        // 个人用户修改
+        $('.btn-edit').click(function(e){
+            e.preventDefault();
+            // 创建formData
+            // formData需要传入dom对象
+            // $('form')jq对象
+            // $('form')[0]获取dom元素
+            // var data = new FormData($('form')[0]);
+            var data = new FormData(document.querySelector('form'));
+            $.ajax({
+                url:BigNew.user_edit,
+                type:'post',
+                data:data,
+                // 不设置类型
+                contentType:false,
+                // 不处理数据
+                processData:false,
+                success:function(ss){
+                    console.log(ss);
+                    alert(ss.msg);
+                    if(ss.code === 200) {
+                        window.parent.location.reload();
+                    }
+                }
+            })
+        })
+        // 本地图片预览
+        $('#exampleInputFile').change(function(){
+            // 生成url
+            var url = URL.createObjectURL(this.files[0]);
+            // 设置给img的src
+            // prev 获取前一个兄弟节点
+            $(this).prev('img').attr('src',url);
+            // $(this).siblings('img').attr('src'.url);
+        })
+    })
+</script>
 </html>
