@@ -13,6 +13,8 @@
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 引入模板引擎js文件 -->
     <script src="./libs/template-web.js"></script>
+    <!-- 导入分页插件 -->
+    <script src="./libs/jquery.twbsPagination.js"></script>
 </head>
 
 <body>
@@ -54,7 +56,7 @@
                         <th class="text-center" width="100">操作</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class='article-tbody'>
                     <tr>
                         <td>王积千造统最头</td>
                         <td>杰克</td>
@@ -68,10 +70,152 @@
                     </tr>
                 </tbody>
             </table>
+            <!-- 中间区域的  底部容器 -->
             <div class="row text-center">
+                <ul id="pagination-demo" class="pagination-sm"></ul>
             </div>
         </div>
     </div>
 </body>
+<!-- 定义模板 -->
+<script type="text/html" id="cateTem">
+    <!-- 所有分类就一个 固定的 -->
+<option value="">所有分类</option>
+<!-- 下面这部分根据数据生成 -->
+{{each data}}
+<option value="{{$value.id}}">{{$value.name}}</option>
+{{/each}}
+</script>
+<script type="text/html" id='articleTem'>
+    {{each data.data}}
+    <tr>
+        <td>{{ $value.title }}</td>
+        <td>{{ $value.author }}</td>
+        <td>{{ $value.category}}</td>
+        <td class="text-center">{{ $value.date }}</td>
+        <td class="text-center">{{ $value.state }}</td>
+        <td class="text-center" data-id="{{$value.id}}">
+            <!-- 也可以绑定点击事件 -->
+            <a href="article_edit.html?id={{$value.id}}" class="btn btn-default btn-xs">编辑</a>
+            <a href="javascript:void(0);" class="btn btn-danger btn-xs delete">删除</a>
+        </td>
+    </tr>
+    {{/each}}
+</script>
+<script>
+    $(function () {
+        // 每一页的数据条数 抽取为变量 方便后续的修改
+        var myPerpage = 10;
+        // 调用接口，获取文章分类数据
+        $.ajax({
+            url: BigNew.category_list,
+            success: function (backData) {
+                console.log(backData);
+                // 调用模板引擎的方法
+                var res = template('cateTem', backData);
+                // console.log(res);
+                
+                // 渲染到页面上
+                $("#selCategory").html(res)
+            }
+        })
+        // 获取文章的列表数据  不做任何的筛选
+        $.ajax({
+            url: BigNew.article_query,
+            data: {
+                // 每一页多少条数据
+                perpage: myPerpage
+            },
+            success: function (backData) {
+                console.log(backData);
+                // 调用方法
+                var res = template('articleTem', backData);
+                console.log(res);
+                
+                // 返回到tbody中
+                $('article-tbody').html(res);
+                // 服务器返回数据之后我们才知道有多少页  创建分页插件
+                // 调用分页插件方法
+                $('#pagination-demo').twbsPagination({
+                    totalPages: backData.data.totalPage,
+                    visiblePages: 7,
+                    first: "首页",
+                    last: "尾页",
+                    prev: "上一页",
+                    next: "下一页",
+                    onPageClick: function (event, page) {
+                        // 获取页码
+                        console.log(page);
+                        // 分页依旧需要保留筛选的状态
+                        // 获取类型id
+                        var type = $("#selCategory").val();
+                        // 获取状态
+                        console.log(type);
+                        
+                        var state = $("#selStatus").val();
+
+                        console.log(state);
+                        
+                        // 获取这一页对应的数据
+                        $.ajax({
+                            url: BigNew.article_query,
+                            data: {
+                                // 页码
+                                page: page,
+                                // 页容量
+                                perpage: myPerpage,
+                                // 筛选的条件
+                                type: type,
+                                state: state
+                            },
+                            success: function (backData) {
+                                // 模板引擎
+                                // 调用发放
+                                var res = template('articleTem', backData);
+                                // tbody中
+                                $('.article-tbody').html(res);
+                            }
+                        })
+                    }
+                })
+            }
+        })
+        // 筛选
+        $("#btnSearch").click(function (e) {
+            // 阻止默认行为
+            e.preventDefault();
+            // 获取类型id
+            var type = $('#selCategory').val();
+            // 获取状态
+            var state = $("#selStatus").val();
+            // console.log(type,state);
+            // ajax传递筛选条件获取数据
+            $.ajax({
+                url: BigNew.article_query,
+                data: {
+                    type: type,
+                    state: state,
+                    // perpage 不给 默认是6
+                    // success中计算出来的总页数 每一页是 6条
+                    perpage: myPerpage
+                },
+                success: function (backData) {
+                    console.log(backData);
+                    // 调用模版引擎的方法
+                    var res = template('articleTem', backData);
+                    // 渲染到tbody中
+                    $('.article-tbody').html(res);
+                    // console.log(res);
+                    // 重新设置总页数
+                    // changeTotalPages 固定的写法 调用插件内部的一个方法
+                    // 参数1 新的总页数 backData.data.totalPage
+                    // 参数2 当前页  1
+                    $('#pagination-demo').twbsPagination('changeTotalPages', backData.data
+                        .totalPage, 1);
+                }
+            })
+        })
+    })
+</script>
 
 </html>
