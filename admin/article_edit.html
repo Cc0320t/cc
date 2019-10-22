@@ -10,10 +10,16 @@
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/iconfont.css">
     <link rel="stylesheet" href="css/main.css">
+    <!-- 日期插件的样式 -->
+    <link rel="stylesheet" href="./libs/jedate/css/jedate.css">
     <!-- jq -->
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 模板引擎 -->
     <script src="./libs/template-web.js"></script>
+    <!-- 日期插件的js -->
+    <script src="./libs/jedate/js/jedate.js"></script>
+    <!-- 富文本编辑器的js -->
+    <script src="//unpkg.com/wangeditor/release/wangEditor.min.js"></script>
 </head>
 
 <body>
@@ -23,6 +29,8 @@
         </div>
         <div class="container-fluid common_con">
             <form class="form-horizontal article_form" id="form">
+                <!-- 添加一个隐藏域 ，偷偷保存一个id -->
+                <input type="hidden" class="article_id" name="id">
                 <div class="form-group">
                     <label for="inputTitle" class="col-sm-2 control-label">文章标题：</label>
                     <div class="col-sm-10">
@@ -48,9 +56,11 @@
                         </select>
                     </div>
                 </div>
+                <!-- 日期的容器 -->
                 <div class="form-group">
                     <label class="col-sm-2 control-label">发布时间：</label>
-                    <div class="col-sm-4">
+                    <div class="col-sm-2">
+                        <input type="text" name="date" class="form-control date">
                     </div>
                 </div>
                 <div class="form-group">
@@ -68,5 +78,150 @@
         </div>
     </div>
 </body>
+<!-- 定义模板  分类选项-->
+<script type="text/html" id="cateTem">
+    <!-- 下面这部分根据数据生成 -->
+    {{each data}}
+<option value="{{$value.id}}">{{$value.name}}</option>
+{{/each}}
+</script>
+<script>
+    $(function () {
+        // 获取文章分类数据
+        $.ajax({
+            url: BigNew.category_list,
+            success: function (backData) {
+                console.log(backData);
+                // 调用方法
+                var res = template('cateTem', backData);
+                // 渲染到页面上
+                $('.category').html(res);
+            }
+        })
+        // 初始化日期插件
+        jeDate(".date", {
+            // 年月日
+            format: "YYYY-MM-DD",
+            isTime: false,
+            minDate: "2014-09-19 00:00:00",
+            isinitVal: true,
+            zIndex: 999999
+            // skinCell:'jedateblue'
+        })
+        // 初始化富文本编辑器
+        var E = window.wangEditor
+        var editor = new E('.editor')
+        editor.create()
+        // 本地图片预览
+        $("#inputCover").change(function () {
+            // 获取file
+            var file = this.files[0];
+            // 生成url
+            var url = URL.createObjectURL(file)
+            // 设置img  src
+            $(this).prev('img').attr('src', url);
+        })
+        // 获取并解析id
+        function formatData() {
+            var dataStr = window.location.search.slice(1);
+            // 切割为`key=value`的数组
+            var dataArr = dataStr.split('&');
+            // 生成数据对象
+            var searchData = {};
+            for (let i = 0; i < dataArr.length; i++) {
+                // 获取每一项
+                var eachData = dataArr[i].split('=');
+                // console.log(eachData);
+                // 添加到对象中
+                searchData[eachData[0]] = eachData[1];
+            }
+            return searchData;
+        }
+        var searchData = formatData();
+        console.log(searchData);
+        // 根据id获取id对应的文章数据
+        $.ajax({
+            url: BigNew.article_search,
+            // 通过对象获取id
+            data:{
+                id:searchData.id,
+            },
+            success:function(backData){
+                // console.log(backData);
+                // 挨个的设置
+                // 标题是
+                $(".title").val(backData.data.title);
+                // 封面
+                $(".article_cover").attr('src',backData.data.cover);
+                // 分类
+                $('.category').val(backData.data.categoryId);
+                // 日期  data（数据）date（日期）
+                $('.date').val(backData.data.date);
+                // 富文本
+                editor.txt.html(backData.data.content);
+                // id通过隐藏域保存
+                $('.article_id').val(backData.data.id);
+            }
+        })
+        // 点击修改按钮   提交数据
+        function publishArticle (state) {
+
+            $(".btn-edit").click(function(e){
+                // alert(22)
+                e.preventDefault();
+                // 创建formData
+                var formData = new formData($('form')[0]);
+                // 追加数据
+                formData.append('content',editor.txt.html());
+                formData.append('state',state);
+                $.ajax({
+                    url:BigNew.article_publish,
+                    type:'post',
+                    data:formData,
+                    processData:false,
+                    contentType:false,
+                    success:function(backData){
+                        // console.log(backData);
+                        if (backData.code === 200) {
+                            alert(backData.msg);
+                        }
+                        
+                    }  
+                })
+            })
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    })
+</script>
 
 </html>
