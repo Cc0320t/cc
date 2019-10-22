@@ -81,7 +81,39 @@
             </div>
         </div>
     </div>
-
+    <!-- Modal -编辑模态框 -->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <!-- 标题 -->
+                    <h4 class="modal-title" id="myModalLabel">编辑分类</h4>
+                </div>
+                <!-- 内容 -->
+                <div class="modal-body">
+                    <form>
+                        <!-- 偷偷的藏一个隐藏域 看不到的文本框 保存数据 防止普通用户-->
+                        <input type="hidden" class="edit-id">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">分类名称:</label>
+                            <input type="text" class="form-control edit-name">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">分类别名:</label>
+                            <input type="text" class="form-control edit-slug">
+                        </div>
+                    </form>
+                </div>
+                <!-- 底部 -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-success">修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 <!-- 定义 模板 -->
 <script type="text/html" id="cateTem">
@@ -95,7 +127,7 @@
         </td>
     </tr>
     {{/each}}
-</script> 
+</script>
 <script>
     $(function () {
         // 获取文章类别数据
@@ -140,24 +172,71 @@
         // 点击删除
         // tr是动态创建的 需要用到事件委托 只要是动态创建，肯定用事件委托
         // 可以委托到他的上一级或者上一级没影响
-        $('tbody').on('click','.btn-delete',function(){
+        $('tbody').on('click', '.btn-delete', function () {
             // alert(222);
             // 获取id值
-            var id  = $(this).attr("data-id");
+            var id = $(this).attr("data-id");
             // 调用接口
             $.ajax({
-                url:BigNew.category_delete,
-                type:'post',
-                data:{
-                    id:id,
+                url: BigNew.category_delete,
+                type: 'post',
+                data: {
+                    id: id,
                 },
-                success:function(hh){
-                    console.log(hh);      
+                success: function (hh) {
+                    console.log(hh);
                     if (hh.code === 204) {
                         alert('您确定要滚犊子了么，亲😂');
                         getCategoryData();
                     }
                 }
+            })
+        })
+        // 点击编辑按钮进入编辑按钮
+        $('tbody').on('click', '.btn-info', function () {
+            // alert(333);
+            // 获取id
+            var id = $(this).next().attr('data-id');
+            // ajax获取数据
+            $.ajax({
+                url: BigNew.category_search,
+                data: {
+                    id: id
+                },
+                success: function (cc) {
+                    console.log(cc);
+                    // 设置静态框数据
+                    $('.edit-name').val(cc.data[0].name);
+                    $('.edit-slug').val(cc.data[0].slug);
+                    // 额外的保存id
+                    $('.edit-id').val(cc.data[0].id);
+                    // 弹出框框
+                    $('#editModal').modal('show');
+                }
+            })
+        })
+        // 点击保存
+        $('#editModal .btn-success').click(function(){
+            // 获取数据
+            var id = $('.edit-id').val();
+            var name = $('.edit-name').val();
+            var slug = $('.edit-slug').val();
+            $.ajax({
+               url: BigNew.category_edit,
+               type:'post',
+               data:{
+                   id:id,
+                   name : name,
+                   slug : slug
+               },
+               success:function(hh){
+                   if (hh.code === 200) {
+                    //    关闭弹窗
+                       $('#editModal').modal('hide');
+                    //    重新获取数据
+                       getCategoryData();
+                   }
+               }
             })
         })
     })
