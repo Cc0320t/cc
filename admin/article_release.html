@@ -10,10 +10,16 @@
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/iconfont.css">
     <link rel="stylesheet" href="css/main.css">
+    <!-- 日期插件的样式 -->
+    <link rel="stylesheet" href="./libs/jedate/css/jedate.css">
     <!-- jq -->
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 模板引擎 -->
     <script src="./libs/template-web.js"></script>
+    <!-- 日期插件的js -->
+    <script src="./libs/jedate/js/jedate.js"></script>
+    <!-- 富文本编辑器的js -->
+    <script src="//unpkg.com/wangeditor/release/wangEditor.min.js"></script>
 </head>
 
 <body>
@@ -50,23 +56,116 @@
                 </div>
                 <div class="form-group">
                     <label class="col-sm-2 control-label">发布时间：</label>
-                    <div class="col-sm-4">
+                    <div class="col-sm-2">
+                            <input type="text" name="date" class="form-control date">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">文章内容：</label>
-                    <div class="col-sm-10">
+                    <div class="col-sm-10 editor">
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
-                        <button type="submit" class="btn btn-success btn-release">发布</button>
-                        <button type="submit" class="btn btn-default btn-draft">存为草稿</button>
+                        <button type="button" class="btn btn-success btn-release">发布</button>
+                        <button type="button" class="btn btn-default btn-draft">存为草稿</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 </body>
+<!-- 定义模板  分类选项-->
+<script type="text/html" id="cateTem">
+    <!-- 下面这部分根据数据生成 -->
+    {{each data}}
+<option value="{{$value.id}}">{{$value.name}}</option>
+{{/each}}
+</script>
+<script>
+    $(function () {
+        // 一.获取文章分类数据
+        $.ajax({
+            url: BigNew.category_list,
+            success: function (backData) {
+                console.log(backData);
+                // 调用方法
+                var res = template('cateTem', backData);
+                // 渲染到页面上
+                $('.category').html(res);
+            }
+        })
+
+        // 初始化日期插件
+        jeDate(".date", {
+            // 年月日
+            format: "YYYY-MM-DD",
+            isTime: false,
+            minDate: "2014-09-19 00:00:00",
+            isinitVal: true,
+            zIndex: 999999
+            // skinCell:'jedateblue'
+        })
+
+        // 初始化富文本编辑器
+        var E = window.wangEditor
+        var editor = new E('.editor')
+        editor.create()
+
+        // 本地图片预览
+        $("#inputCover").change(function () {
+            // 获取file
+            var file = this.files[0];
+            // 生成url
+            var url = URL.createObjectURL(file);
+            // 设置给img src
+            $(this).prev('img').attr('src', url);
+        })
+
+
+        // 发布文章的逻辑
+        function publishArticle(state) {
+            // 创建FormData
+            // 有name属性的表单元素的value值 
+            // 如果没有name拿不到
+            // 为日期添加了name=date
+            var formData = new FormData($('form')[0]);
+
+            // 内容还没有添加 需要自行添加
+            // 获取富文本编辑器内部的内容 带结构的那种
+            formData.append('content', editor.txt.html());
+
+            // 追加状态 为 已发布
+            formData.append('state', state);
+            $.ajax({
+                url: BigNew.article_publish,
+                type: "post",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (backData) {
+                    // console.log(backData);
+                    if (backData.code === 200) {
+                        alert(backData.msg);
+                    }
+                }
+            })
+        }
+
+        // 发布文章
+        $(".btn-release").click(function () {
+
+            // 调用发布文章的方法
+            publishArticle('已发布')
+        })
+
+
+        // 发布文章为草稿
+        $(".btn-draft").click(function () {
+            // 调用发布文章的方法
+            publishArticle('草稿')
+        })
+    })
+</script>
 
 </html>

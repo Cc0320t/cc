@@ -65,7 +65,7 @@
                 </div>
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">文章内容：</label>
-                    <div class="col-sm-10">
+                    <div class="col-sm-10 editor">
                     </div>
                 </div>
                 <div class="form-group">
@@ -143,16 +143,16 @@
         $.ajax({
             url: BigNew.article_search,
             // 通过对象获取id
-            data:{
-                id:searchData.id,
+            data: {
+                id: searchData.id,
             },
-            success:function(backData){
+            success: function (backData) {
                 // console.log(backData);
                 // 挨个的设置
                 // 标题是
                 $(".title").val(backData.data.title);
                 // 封面
-                $(".article_cover").attr('src',backData.data.cover);
+                $(".article_cover").attr('src', backData.data.cover);
                 // 分类
                 $('.category').val(backData.data.categoryId);
                 // 日期  data（数据）date（日期）
@@ -164,63 +164,30 @@
             }
         })
         // 点击修改按钮   提交数据
-        function publishArticle (state) {
+        $(".btn-edit").click(function (e) {
+            // alert(22)
+            e.preventDefault();
+            // 创建formData
+            var formData = new FormData($('form')[0]);
+            // 追加数据
+            formData.append('content', editor.txt.html());
+            formData.append('state', '已发布');
+            $.ajax({
+                url: BigNew.article_edit,
+                type: 'post',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (backData) {
+                    // console.log(backData);
+                    if (backData.code === 200) {
+                        alert(backData.msg);
+                        // window.prelocation.href = 'index.html'
+                    }
 
-            $(".btn-edit").click(function(e){
-                // alert(22)
-                e.preventDefault();
-                // 创建formData
-                var formData = new formData($('form')[0]);
-                // 追加数据
-                formData.append('content',editor.txt.html());
-                formData.append('state',state);
-                $.ajax({
-                    url:BigNew.article_publish,
-                    type:'post',
-                    data:formData,
-                    processData:false,
-                    contentType:false,
-                    success:function(backData){
-                        // console.log(backData);
-                        if (backData.code === 200) {
-                            alert(backData.msg);
-                        }
-                        
-                    }  
-                })
+                }
             })
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        })
     })
 </script>
 
